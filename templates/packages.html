@@ -1,0 +1,117 @@
+{% extends 'base.html' %}
+
+{% block title %}Packages - Smart Hajj Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .package-card {
+        border: none;
+        border-radius: 1.5rem;
+        transition: all 0.3s ease;
+        overflow: hidden;
+    }
+    .package-card:hover {
+        transform: translateY(-10px);
+        box-shadow: 0 1rem 3rem rgba(0,0,0,0.175) !important;
+    }
+    .package-header {
+        padding: 2rem;
+        text-align: center;
+        color: white;
+    }
+    .package-body {
+        padding: 2rem;
+    }
+    .feature-list li {
+        margin-bottom: 1rem;
+        display: flex;
+        align-items: center;
+    }
+    .feature-list i {
+        margin-right: 10px;
+    }
+    .price-tag {
+        font-size: 3rem;
+        font-weight: 800;
+        margin: 1.5rem 0;
+    }
+    .bg-economy { background: linear-gradient(45deg, #6c757d, #495057); }
+    .bg-vip { background: linear-gradient(45deg, #ffc107, #ff9800); }
+    .bg-premium { background: linear-gradient(45deg, #0dcaf0, #0097a7); }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-4 border-bottom">
+    <h1 class="h2">Package Management</h1>
+    <p class="text-muted">Manage Hajj service tiers and pricing</p>
+</div>
+
+<div class="row g-4">
+    <!-- Economy -->
+    <div class="col-lg-4">
+        <div class="card h-100 shadow-sm package-card">
+            <div class="package-header bg-economy">
+                <i class="fas fa-mosque fa-3x mb-3"></i>
+                <h3 class="fw-bold">Economy</h3>
+                <div class="price-tag">$3,000</div>
+            </div>
+            <div class="package-body">
+                <ul class="list-unstyled feature-list">
+                    <li><i class="fas fa-check-circle text-success"></i> Standard Accommodation (Azizia)</li>
+                    <li><i class="fas fa-check-circle text-success"></i> Shared Transport (Buses)</li>
+                    <li><i class="fas fa-check-circle text-success"></i> 3 Meals Daily (Buffet)</li>
+                    <li><i class="fas fa-check-circle text-success"></i> 24/7 Group Assistance</li>
+                    <li><i class="fas fa-check-circle text-success"></i> Group Ziyarat (Makkah/Madinah)</li>
+                    <li class="text-muted"><i class="fas fa-times-circle"></i> No Private Tents in Mina</li>
+                </ul>
+                <button class="btn btn-outline-secondary w-100 mt-3 py-2 fw-bold">Update Pricing</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- VIP -->
+    <div class="col-lg-4">
+        <div class="card h-100 shadow-sm package-card">
+            <div class="package-header bg-vip">
+                <i class="fas fa-star fa-3x mb-3"></i>
+                <h3 class="fw-bold">VIP</h3>
+                <div class="price-tag">$7,500</div>
+            </div>
+            <div class="package-body">
+                <ul class="list-unstyled feature-list">
+                    <li><i class="fas fa-check-circle text-warning"></i> 5-Star Hotel (Front of Haram)</li>
+                    <li><i class="fas fa-check-circle text-warning"></i> Private GMC Transport</li>
+                    <li><i class="fas fa-check-circle text-warning"></i> VIP Tents (Category A) in Mina</li>
+                    <li><i class="fas fa-check-circle text-warning"></i> Dedicated Personal Guide</li>
+                    <li><i class="fas fa-check-circle text-warning"></i> Premium Laundry Services</li>
+                    <li><i class="fas fa-check-circle text-warning"></i> Specialized Medical Kit</li>
+                </ul>
+                <button class="btn btn-warning w-100 mt-3 py-2 fw-bold text-white shadow-sm">Update Pricing</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Premium -->
+    <div class="col-lg-4">
+        <div class="card h-100 shadow-sm package-card border-info border-2">
+            <div class="package-header bg-premium">
+                <i class="fas fa-crown fa-3x mb-3"></i>
+                <h3 class="fw-bold">Premium</h3>
+                <div class="price-tag">$12,000</div>
+            </div>
+            <div class="package-body">
+                <ul class="list-unstyled feature-list">
+                    <li><i class="fas fa-check-circle text-info"></i> Royal Suite (Clock Tower)</li>
+                    <li><i class="fas fa-check-circle text-info"></i> Haramain High-Speed Rail (Business)</li>
+                    <li><i class="fas fa-check-circle text-info"></i> 24/7 Personal Concierge</li>
+                    <li><i class="fas fa-check-circle text-info"></i> Private Chef & Customized Menu</li>
+                    <li><i class="fas fa-check-circle text-info"></i> Helicopter Transfer (Optional)</li>
+                    <li><i class="fas fa-check-circle text-info"></i> Executive Lounge Access</li>
+                </ul>
+                <button class="btn btn-info w-100 mt-3 py-2 fw-bold text-white shadow-sm">Update Pricing</button>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

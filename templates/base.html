@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}Smart Hajj Management{% endblock %}</title>
+    <!-- Bootstrap 5 CSS -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <!-- FontAwesome Icons -->
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <!-- Custom CSS -->
+    <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
+    {% block extra_css %}{% endblock %}
+</head>
+<body>
+
+    <div class="wrapper">
+        <!-- Sidebar -->
+        <nav id="sidebar">
+            <div class="sidebar-header">
+                <h3>Hajj Smart</h3>
+            </div>
+
+            <ul class="list-unstyled components">
+                <li class="{% if active_page == 'dashboard' %}active{% endif %}">
+                    <a href="{{ url_for('dashboard_ui') }}"><i class="fas fa-home me-2"></i> Dashboard</a>
+                </li>
+                <li class="{% if active_page == 'pilgrims' %}active{% endif %}">
+                    <a href="{{ url_for('pilgrims_ui') }}"><i class="fas fa-user-friends me-2"></i> Pilgrims</a>
+                </li>
+                <li class="{% if active_page == 'packages' %}active{% endif %}">
+                    <a href="{{ url_for('packages_ui') }}"><i class="fas fa-box me-2"></i> Packages</a>
+                </li>
+                <li class="{% if active_page == 'payments' %}active{% endif %}">
+                    <a href="{{ url_for('payments_ui') }}"><i class="fas fa-credit-card me-2"></i> Payments</a>
+                </li>
+            </ul>
+        </nav>
+
+        <!-- Page Content -->
+        <div id="content">
+            <!-- Navbar -->
+            <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 shadow-sm">
+                <div class="container-fluid">
+                    <button type="button" id="sidebarCollapse" class="btn btn-primary">
+                        <i class="fas fa-align-left"></i>
+                    </button>
+                    <div class="ms-auto">
+                        <span class="navbar-text me-3">
+                            <i class="fas fa-user-circle me-1"></i> Admin
+                        </span>
+                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+                    </div>
+                </div>
+            </nav>
+
+            <!-- Main Content Area -->
+            <div class="container-fluid">
+                {% block content %}{% endblock %}
+            </div>
+        </div>
+    </div>
+
+    <!-- Bootstrap 5 JS Bundle -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <!-- Custom JS -->
+    <script src="{{ url_for('static', filename='js/main.js') }}"></script>
+    {% block extra_js %}{% endblock %}
+</body>
+</html>

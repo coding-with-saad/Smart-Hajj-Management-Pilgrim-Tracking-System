@@ -42,7 +42,7 @@ The system will allow administrators to:
 
 The frontend will be developed using **HTML, CSS, JavaScript, and Bootstrap**, while Flask APIs will handle backend logic and database connectivity.
 
-**MongoDB Atlas** will be used as the cloud NoSQL database to store and manage all pilgrim-related data.
+**MongoDB Local Server (NoSQL Database)** will be used as the cloud NoSQL database to store and manage all pilgrim-related data.
 
 ---
 
@@ -51,7 +51,7 @@ The frontend will be developed using **HTML, CSS, JavaScript, and Bootstrap**, w
 ## 🗄️ Database Concepts
 
 * NoSQL Database
-* Cloud Database
+* Local database integration
 * CRUD Operations
 * Database Connectivity
 * Data Validation
@@ -74,7 +74,7 @@ The frontend will be developed using **HTML, CSS, JavaScript, and Bootstrap**, w
 
 ## 🧰 Tools & Environment
 
-* MongoDB Atlas
+* MongoDB Local Server (NoSQL Database)
 * MongoDB Compass
 * Postman
 * Visual Studio Code
@@ -156,7 +156,7 @@ The system will provide:
 This project demonstrates practical implementation of:
 
 * NoSQL databases
-* Cloud database integration
+* Local database integration
 * REST APIs
 * Full-stack web development
 
@@ -168,7 +168,7 @@ This project demonstrates practical implementation of:
 
 * Python 3.x
 * Flask
-* MongoDB Atlas
+* MongoDB Local Server (NoSQL Database)
 * Visual Studio Code
 * MongoDB Compass
 * Postman
@@ -189,7 +189,7 @@ Frontend (HTML + CSS + JavaScript)
               ↓
       Flask Backend (APIs)
               ↓
-      MongoDB Atlas (Cloud Database)
+      MongoDB Local Server (NoSQL Database)
 ```
 
 ---

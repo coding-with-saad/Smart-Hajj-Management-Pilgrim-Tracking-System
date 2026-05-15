@@ -31,7 +31,12 @@
 
 *GATE: Must pass before Phase 0 research. Re-check after Phase 1 design.*
 
-[Gates determined based on constitution file]
+- [ ] **I. Modular Development**: Feature is standalone and respects layer separation.
+- [ ] **II. API-First**: Communication via JSON; DB logic centralized in utils.
+- [ ] **III. Code Reusability**: No duplication; uses existing helpers/components.
+- [ ] **IV. Quality & Validation**: Logic separated from routes; input validation planned.
+- [ ] **V. Security**: No hardcoded secrets; auth/env variables planned.
+- [ ] **VI. Modern UI/UX**: Dashboard-ready; responsive design; follows styling rules.
 
 ## Project Structure
 

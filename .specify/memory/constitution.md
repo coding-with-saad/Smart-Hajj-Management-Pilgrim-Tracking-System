@@ -1,55 +1,85 @@
-# [PROJECT_NAME] Constitution
-<!-- Example: Spec Constitution, TaskFlow Constitution, etc. -->
+<!--
+Sync Impact Report:
+- Version change: N/A -> 1.0.0
+- List of modified principles: (Initial creation based on template)
+  - I. Modular Development
+  - II. API-First Communication
+  - III. Code Reusability & Cleanliness
+  - IV. Quality & Validation
+  - V. Security & Environment
+  - VI. Modern UI/UX
+- Added sections: Technology Stack & Constraints, Workflow & Development Philosophy
+- Removed sections: None
+- Templates requiring updates:
+  - .specify/templates/plan-template.md: ✅ Updated "Constitution Check" section
+- Follow-up TODOs: None
+-->
+
+# Smart Hajj Management & Pilgrim Tracking System Constitution
 
 ## Core Principles
 
-### [PRINCIPLE_1_NAME]
-<!-- Example: I. Library-First -->
-[PRINCIPLE_1_DESCRIPTION]
-<!-- Example: Every feature starts as a standalone library; Libraries must be self-contained, independently testable, documented; Clear purpose required - no organizational-only libraries -->
+### I. Modular Development
+Every feature must be developed as an independent module before integration into the main application. Frontend, backend, and database layers must remain logically separated to ensure maintainability and scalability.
 
-### [PRINCIPLE_2_NAME]
-<!-- Example: II. CLI Interface -->
-[PRINCIPLE_2_DESCRIPTION]
-<!-- Example: Every library exposes functionality via CLI; Text in/out protocol: stdin/args → stdout, errors → stderr; Support JSON + human-readable formats -->
+### II. API-First Communication
+All APIs must communicate using JSON responses. Database access should be centralized through dedicated database utility functions to prevent logic leakage and ensure consistency.
 
-### [PRINCIPLE_3_NAME]
-<!-- Example: III. Test-First (NON-NEGOTIABLE) -->
-[PRINCIPLE_3_DESCRIPTION]
-<!-- Example: TDD mandatory: Tests written → User approved → Tests fail → Then implement; Red-Green-Refactor cycle strictly enforced -->
+### III. Code Reusability & Cleanliness
+Reusable components and helper functions should be preferred over duplicated code. The project structure must remain clean and easy to navigate, following undergraduate-friendly professional standards.
 
-### [PRINCIPLE_4_NAME]
-<!-- Example: IV. Integration Testing -->
-[PRINCIPLE_4_DESCRIPTION]
-<!-- Example: Focus areas requiring integration tests: New library contract tests, Contract changes, Inter-service communication, Shared schemas -->
+### IV. Quality & Validation
+Keep functions small and readable. Use meaningful variable and function names. Separate business logic from routes. All form inputs MUST be validated on both frontend and backend before database operations.
 
-### [PRINCIPLE_5_NAME]
-<!-- Example: V. Observability, VI. Versioning & Breaking Changes, VII. Simplicity -->
-[PRINCIPLE_5_DESCRIPTION]
-<!-- Example: Text I/O ensures debuggability; Structured logging required; Or: MAJOR.MINOR.BUILD format; Or: Start simple, YAGNI principles -->
+### V. Security & Environment
+No passwords or secret keys hardcoded in source code. Use environment variables for sensitive data. Restrict admin-only operations through authentication. Never expose database credentials publicly.
 
-### [PRINCIPLE_6_NAME]
+### VI. Modern UI/UX
+The application must use a modern dashboard-style interface. UI should be responsive for desktop and mobile devices. Use clean layouts, cards, charts, tables, and icons to ensure a professional academic presentation.
 
+## Technology Stack & Constraints
 
-[PRINCIPLE__DESCRIPTION]
+### Backend
+- Language: Python 3.12+
+- Framework: Flask
+- API Style: REST APIs
 
-## [SECTION_2_NAME]
-<!-- Example: Additional Constraints, Security Requirements, Performance Standards, etc. -->
+### Frontend
+- HTML5, CSS3, JavaScript
+- Framework: Bootstrap 5
+- Analytics: Chart.js
 
-[SECTION_2_CONTENT]
-<!-- Example: Technology stack requirements, compliance standards, deployment policies, etc. -->
+### Database
+- Engine: MongoDB Local Server (NoSQL)
+- Connectivity: PyMongo
 
-## [SECTION_3_NAME]
-<!-- Example: Development Workflow, Review Process, Quality Gates, etc. -->
+### Utilities
+- QR Generation: Python `qrcode` library
 
-[SECTION_3_CONTENT]
-<!-- Example: Code review requirements, testing gates, deployment approval process, etc. -->
+## Workflow & Development Philosophy
+
+### Workflow Rules
+- Build and test one module at a time.
+- Complete backend APIs before frontend integration.
+- Test every API using Postman before connecting frontend.
+- Maintain clear commit messages in GitHub.
+- Keep project documentation updated regularly.
+
+### Development Philosophy
+This project should appear modern and professional while remaining understandable for 4th semester students. The priority is:
+1. Clean UI
+2. Proper functionality
+3. Organized structure
+4. Easy explanation during presentation
+5. Reliable database integration
 
 ## Governance
-<!-- Example: Constitution supersedes all other practices; Amendments require documentation, approval, migration plan -->
+The Smart Hajj Management & Pilgrim Tracking System Constitution is the foundational document for project development. It supersedes individual preferences and ensures a consistent approach across all modules.
 
-[GOVERNANCE_RULES]
-<!-- Example: All PRs/reviews must verify compliance; Complexity must be justified; Use [GUIDANCE_FILE] for runtime development guidance -->
+### Amendment Procedure
+Amendments to this constitution require a version bump and updated "Last Amended" date. Significant architectural changes must be documented via ADRs (Architectural Decision Records).
 
-**Version**: [CONSTITUTION_VERSION] | **Ratified**: [RATIFICATION_DATE] | **Last Amended**: [LAST_AMENDED_DATE]
-<!-- Example: Version: 2.1.1 | Ratified: 2025-06-13 | Last Amended: 2025-07-16 -->
+### Compliance
+All development tasks and implementation plans must be checked against these principles. Bypassing these rules (e.g., hardcoding secrets or skipping validation) is strictly prohibited.
+
+**Version**: 1.0.0 | **Ratified**: 2026-05-13 | **Last Amended**: 2026-05-13

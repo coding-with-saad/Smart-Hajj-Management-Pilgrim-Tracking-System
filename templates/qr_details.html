@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+
+{% block title %}QR Details - Smart Hajj Management{% endblock %}
+
+{% block extra_css %}
+<style>
+    .pilgrim-card {
+        max-width: 400px;
+        margin: 20px auto;
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        overflow: hidden;
+        background: white;
+    }
+    .card-id-header {
+        background: #212529;
+        color: white;
+        padding: 15px;
+        text-align: center;
+    }
+    .qr-placeholder {
+        padding: 20px;
+        text-align: center;
+        background: #f8f9fa;
+    }
+    .qr-placeholder img {
+        max-width: 200px;
+        border: 1px solid #eee;
+    }
+    .card-info {
+        padding: 20px;
+    }
+    .info-row {
+        display: flex;
+        justify-content: space-between;
+        margin-bottom: 10px;
+        border-bottom: 1px solid #eee;
+        padding-bottom: 5px;
+    }
+    .info-label {
+        font-weight: bold;
+        color: #666;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom no-print">
+    <h1 class="h2">QR Identification</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-outline-primary me-2" onclick="window.print()">
+            <i class="fas fa-print me-1"></i> Print Card
+        </button>
+        <a href="{{ url_for('pilgrims_ui') }}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to List
+        </a>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12 text-center">
+        <p class="text-muted no-print">Below is the digital identification card for the pilgrim. You can print this for physical use.</p>
+        
+        <!-- Printable Pilgrim Card -->
+        <div class="pilgrim-card shadow">
+            <div class="card-id-header">
+                <h4 class="mb-0">PILGRIM PASS</h4>
+                <small>Smart Hajj Management System</small>
+            </div>
+            
+            <div class="qr-placeholder">
+                <!-- Fallback to placeholder if qr_path not provided -->
+                <img src="{{ pilgrim.qr_path if pilgrim.qr_path else 'https://api.qrserver.com/v1/create-qr-code/?size=200x200&data=' + (pilgrim.pilgrim_id if pilgrim.pilgrim_id else 'PIL-001') }}" alt="Pilgrim QR Code">
+            </div>
+            
+            <div class="card-info">
+                <div class="info-row">
+                    <span class="info-label">ID:</span>
+                    <span>{{ pilgrim.pilgrim_id if pilgrim.pilgrim_id else 'PIL-001' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Name:</span>
+                    <span>{{ pilgrim.name if pilgrim.name else 'Malik Saad Khawar' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Passport:</span>
+                    <span>{{ pilgrim.passport if pilgrim.passport else 'AB1234567' }}</span>
+                </div>
+                <div class="info-row">
+                    <span class="info-label">Package:</span>
+                    <span>{{ pilgrim.package if pilgrim.package else 'VIP' }}</span>
+                </div>
+                <div class="mt-3 text-center text-muted">
+                    <small>Scan QR code for emergency information</small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,41 @@
+{% extends 'base.html' %}
+
+{% block title %}Payments - Smart Hajj Management{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
+    <h1 class="h2">Payment Tracking</h1>
+    <div class="btn-toolbar mb-2 mb-md-0">
+        <button type="button" class="btn btn-success">
+            <i class="fas fa-file-invoice-dollar me-1"></i> Add New Transaction
+        </button>
+    </div>
+</div>
+
+<!-- Payment Table -->
+<div class="card shadow-sm border-0 rounded-4 overflow-hidden">
+    <div class="card-body p-0">
+        <div class="table-responsive">
+            <table class="table table-hover align-middle mb-0" id="paymentTable">
+                <thead class="bg-dark text-white">
+                    <tr>
+                        <th class="ps-4">Transaction ID</th>
+                        <th>Pilgrim Name</th>
+                        <th>Amount</th>
+                        <th>Method</th>
+                        <th>Date</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody id="paymentTableBody">
+                    <!-- Loaded via JS -->
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{{ url_for('static', filename='js/payments.js') }}"></script>
+{% endblock %}

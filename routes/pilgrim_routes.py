@@ -1,0 +1,98 @@
+from flask import Blueprint, request
+from database.db import db
+from utils.responses import success_response, error_response
+from utils.qr_generator import generate_pilgrim_qr
+from routes.auth_routes import login_required
+
+pilgrim_bp = Blueprint('pilgrims', __name__)
+
+@pilgrim_bp.route('/api/pilgrims', methods=['GET'])
+@login_required
+def get_pilgrims():
+    pilgrims = list(db.pilgrims.find({}, {"_id": 0}))
+    return success_response(data=pilgrims)
+
+@pilgrim_bp.route('/api/pilgrims', methods=['POST'])
+@login_required
+def create_pilgrim():
+    data = request.get_json()
+    if not data:
+        return error_response("No data provided")
+    
+    required_fields = ['name', 'passport', 'cnic']
+    for field in required_fields:
+        if field not in data or not data[field]:
+            return error_response(f"Field '{field}' is required", 400)
+
+    count = db.pilgrims.count_documents({})
+    pilgrim_id = f"PIL-{count + 1:03d}"
+    data['pilgrim_id'] = pilgrim_id
+    
+    # Generate QR Code
+    qr_path = generate_pilgrim_qr(pilgrim_id, data)
+    data['qr_path'] = qr_path
+    
+    try:
+        inserted_pilgrim = db.pilgrims.insert_one(data)
+        
+        # LINKING SYSTEM: Create an automatic payment record for the new pilgrim
+        db.payments.insert_one({
+            "pilgrim_id": inserted_pilgrim.inserted_id,
+            "transaction_id": f"TXN-{data['pilgrim_id']}",
+            "amount_paid": 0, # Initial
+            "payment_date": None,
+            "method": "Pending",
+            "status": "Pending"
+        })
+
+        return success_response(data={"pilgrim_id": pilgrim_id, "qr_path": qr_path}, message="Pilgrim registered", status_code=201)
+    except Exception as e:
+        return error_response(str(e))
+
+@pilgrim_bp.route('/api/pilgrims/<id>', methods=['GET'])
+@login_required
+def get_pilgrim(id):
+    pilgrim = db.pilgrims.find_one({"pilgrim_id": id}, {"_id": 0})
+    if not pilgrim:
+        return error_response("Pilgrim not found", 404)
+    return success_response(data=pilgrim)
+
+@pilgrim_bp.route('/api/pilgrims/<id>', methods=['PUT'])
+@login_required
+def update_pilgrim(id):
+    data = request.get_json()
+    if not data:
+        return error_response("No data provided")
+    
+    # Update the pilgrim record
+    result = db.pilgrims.update_one({"pilgrim_id": id}, {"$set": data})
+    
+    # If the status was updated, synchronize it with the payments collection
+    if 'status' in data:
+        pilgrim = db.pilgrims.find_one({"pilgrim_id": id})
+        if pilgrim:
+            db.payments.update_one(
+                {"pilgrim_id": pilgrim['_id']},
+                {"$set": {"status": data['status']}}
+            )
+            
+            # Logic: If status is 'Paid', update the amount based on package price
+            if data['status'] == 'Paid':
+                package = db.packages.find_one({"name": pilgrim.get('package')})
+                if package:
+                    db.payments.update_one(
+                        {"pilgrim_id": pilgrim['_id']},
+                        {"$set": {"amount_paid": package['price'], "method": "Updated via Admin"}}
+                    )
+
+    if result.matched_count == 0:
+        return error_response("Pilgrim not found", 404)
+    return success_response(message="Pilgrim and Payment synchronized")
+
+@pilgrim_bp.route('/api/pilgrims/<id>', methods=['DELETE'])
+@login_required
+def delete_pilgrim(id):
+    result = db.pilgrims.delete_one({"pilgrim_id": id})
+    if result.deleted_count == 0:
+        return error_response("Pilgrim not found", 404)
+    return success_response(message="Pilgrim deleted")
