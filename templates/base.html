@@ -3,11 +3,11 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}Smart Hajj Management{% endblock %}</title>
+    <title>{% block title %}Smart Hajj System - ALKHAMS{% endblock %}</title>
     <!-- Bootstrap 5 CSS -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- FontAwesome Icons -->
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
     <!-- Custom CSS -->
     <link href="{{ url_for('static', filename='css/style.css') }}" rel="stylesheet">
     {% block extra_css %}{% endblock %}
@@ -19,44 +19,60 @@
         <nav id="sidebar">
             <div class="sidebar-header">
                 <h3 class="mb-0">ALKHAMS</h3>
-                <small class="text-white-50">Sacred Journey Specialists</small>
+                <p class="tagline mb-0" style="font-size: 0.7rem; opacity: 0.6; font-style: italic;">Sacred Journey Specialists</p>
             </div>
 
             <ul class="list-unstyled components">
                 <li class="{% if active_page == 'dashboard' %}active{% endif %}">
-                    <a href="{{ url_for('dashboard_ui') }}"><i class="fas fa-home me-2"></i> Dashboard</a>
+                    <a href="{{ url_for('dashboard_ui') }}"><i class="fas fa-th-large"></i> Dashboard Overview</a>
                 </li>
                 <li class="{% if active_page == 'pilgrims' %}active{% endif %}">
-                    <a href="{{ url_for('pilgrims_ui') }}"><i class="fas fa-user-friends me-2"></i> Pilgrims</a>
+                    <a href="{{ url_for('pilgrims_ui') }}"><i class="fas fa-users"></i> Pilgrim Directory</a>
                 </li>
                 <li class="{% if active_page == 'packages' %}active{% endif %}">
-                    <a href="{{ url_for('packages_ui') }}"><i class="fas fa-box me-2"></i> Packages</a>
+                    <a href="{{ url_for('packages_ui') }}"><i class="fas fa-kaaba"></i> Hajj Packages</a>
                 </li>
                 <li class="{% if active_page == 'payments' %}active{% endif %}">
-                    <a href="{{ url_for('payments_ui') }}"><i class="fas fa-credit-card me-2"></i> Payments</a>
+                    <a href="{{ url_for('payments_ui') }}"><i class="fas fa-wallet"></i> Financial Ledger</a>
                 </li>
             </ul>
+
+            <div class="sidebar-footer" style="position: absolute; bottom: 20px; width: 100%; text-align: center; opacity: 0.4; font-size: 0.8rem;">
+                v1.2.0 Stable
+            </div>
         </nav>
 
         <!-- Page Content -->
         <div id="content">
             <!-- Navbar -->
-            <nav class="navbar navbar-expand-lg navbar-light bg-light mb-4 shadow-sm">
+            <nav class="navbar navbar-expand-lg navbar-light main-navbar shadow-sm sticky-top">
                 <div class="container-fluid">
-                    <button type="button" id="sidebarCollapse" class="btn btn-primary">
-                        <i class="fas fa-align-left"></i>
+                    <button type="button" id="sidebarCollapse" class="btn btn-light rounded-circle me-3">
+                        <i class="fas fa-bars"></i>
                     </button>
-                    <div class="ms-auto">
-                        <span class="navbar-text me-3">
-                            <i class="fas fa-user-circle me-1"></i> Admin
-                        </span>
-                        <a href="{{ url_for('auth.logout') }}" class="btn btn-outline-danger btn-sm">Logout</a>
+                    
+                    <h5 class="mb-0 fw-600 text-muted d-none d-md-block">Admin Portal</h5>
+
+                    <div class="ms-auto d-flex align-items-center">
+                        <div class="dropdown">
+                            <a class="nav-link dropdown-toggle d-flex align-items-center" href="#" role="button" data-bs-toggle="dropdown">
+                                <div class="bg-primary text-white rounded-circle d-flex align-items-center justify-content-center me-2" style="width: 35px; height: 35px;">
+                                    <i class="fas fa-user-shield"></i>
+                                </div>
+                                <span class="fw-500 text-dark">System Admin</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end shadow border-0 mt-3">
+                                <li><a class="dropdown-item py-2" href="{{ url_for('settings_ui') }}"><i class="fas fa-cog me-2"></i> Settings</a></li>
+                                <li><hr class="dropdown-divider"></li>
+                                <li><a class="dropdown-item py-2 text-danger" href="{{ url_for('auth.logout') }}"><i class="fas fa-sign-out-alt me-2"></i> Logout</a></li>
+                            </ul>
+                        </div>
                     </div>
                 </div>
             </nav>
 
             <!-- Main Content Area -->
-            <div class="container-fluid">
+            <div class="p-4 p-md-5">
                 {% block content %}{% endblock %}
             </div>
         </div>
