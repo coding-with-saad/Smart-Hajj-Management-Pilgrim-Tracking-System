@@ -32,6 +32,9 @@
                 <li class="{% if active_page == 'packages' %}active{% endif %}">
                     <a href="{{ url_for('packages_ui') }}"><i class="fas fa-kaaba"></i> Hajj Packages</a>
                 </li>
+                <li class="{% if active_page == 'offers' %}active{% endif %}">
+                    <a href="{{ url_for('offers.offers_ui') }}"><i class="fas fa-percentage"></i> Discount Offers</a>
+                </li>
                 <li class="{% if active_page == 'payments' %}active{% endif %}">
                     <a href="{{ url_for('payments_ui') }}"><i class="fas fa-wallet"></i> Financial Ledger</a>
                 </li>

@@ -12,6 +12,12 @@ def get_packages():
     # Let's seed them or just return them as a list
     packages = [
         {
+            "id": "PKG-000",
+            "name": "Social (Low Income)",
+            "price": 1500,
+            "features": ["Subsidized Housing", "Shared Transport", "Standard Meals", "Community Support"]
+        },
+        {
             "id": "PKG-001",
             "name": "Economy",
             "price": 3000,

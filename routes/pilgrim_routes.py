@@ -39,6 +39,10 @@ def create_pilgrim():
     qr_path = generate_pilgrim_qr(pilgrim_id, data)
     data['qr_path'] = qr_path
     
+    # Add timestamp for reporting
+    from datetime import datetime
+    data['created_at'] = datetime.now()
+    
     try:
         inserted_pilgrim = db_instance.insert('pilgrims', data)
         
@@ -105,7 +109,26 @@ def update_pilgrim(id):
 @pilgrim_bp.route('/api/pilgrims/<id>', methods=['DELETE'])
 @login_required
 def delete_pilgrim(id):
-    result = db.pilgrims.delete_one({"pilgrim_id": id})
-    if result.deleted_count == 0:
+    # First, find the pilgrim to get their internal _id
+    pilgrim = db.pilgrims.find_one({"pilgrim_id": id})
+    if not pilgrim:
         return error_response("Pilgrim not found", 404)
-    return success_response(message="Pilgrim deleted")
+
+    # Delete the linked payment record first
+    db.payments.delete_one({"pilgrim_id": pilgrim['_id']})
+    
+    # Delete the pilgrim record
+    result = db.pilgrims.delete_one({"pilgrim_id": id})
+    
+    # Optional: Delete the QR code file to save space
+    if 'qr_path' in pilgrim and pilgrim['qr_path']:
+        try:
+            import os
+            # Remove leading slash if present for os.path
+            file_path = pilgrim['qr_path'].lstrip('/')
+            if os.path.exists(file_path):
+                os.remove(file_path)
+        except Exception:
+            pass
+
+    return success_response(message="Pilgrim and financial records deleted successfully")
