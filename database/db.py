@@ -43,6 +43,22 @@ class Database:
             ])
             print("Default packages seeded.")
 
+    # CRUD Wrappers
+    def insert(self, collection, data):
+        return self.db[collection].insert_one(data)
+
+    def find(self, collection, query={}, projection={"_id": 0}):
+        return list(self.db[collection].find(query, projection))
+
+    def find_one(self, collection, query, projection={"_id": 0}):
+        return self.db[collection].find_one(query, projection)
+
+    def update(self, collection, query, data):
+        return self.db[collection].update_one(query, {"$set": data})
+
+    def delete(self, collection, query):
+        return self.db[collection].delete_one(query)
+
 db_instance = Database()
 db = db_instance.connection
 db_instance.init_db()

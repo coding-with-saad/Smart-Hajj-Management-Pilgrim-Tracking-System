@@ -1,15 +1,16 @@
 from flask import Blueprint, request
-from database.db import db
+from database.db import db, db_instance
 from utils.responses import success_response, error_response
 from utils.qr_generator import generate_pilgrim_qr
 from routes.auth_routes import login_required
+from pymongo.errors import DuplicateKeyError
 
 pilgrim_bp = Blueprint('pilgrims', __name__)
 
 @pilgrim_bp.route('/api/pilgrims', methods=['GET'])
 @login_required
 def get_pilgrims():
-    pilgrims = list(db.pilgrims.find({}, {"_id": 0}))
+    pilgrims = db_instance.find('pilgrims')
     return success_response(data=pilgrims)
 
 @pilgrim_bp.route('/api/pilgrims', methods=['POST'])
@@ -24,6 +25,12 @@ def create_pilgrim():
         if field not in data or not data[field]:
             return error_response(f"Field '{field}' is required", 400)
 
+    # Validate package existence if provided
+    if 'package' in data:
+        package = db_instance.find_one('packages', {"name": data['package']})
+        if not package:
+            return error_response(f"Package '{data['package']}' does not exist", 400)
+
     count = db.pilgrims.count_documents({})
     pilgrim_id = f"PIL-{count + 1:03d}"
     data['pilgrim_id'] = pilgrim_id
@@ -33,19 +40,25 @@ def create_pilgrim():
     data['qr_path'] = qr_path
     
     try:
-        inserted_pilgrim = db.pilgrims.insert_one(data)
+        inserted_pilgrim = db_instance.insert('pilgrims', data)
         
         # LINKING SYSTEM: Create an automatic payment record for the new pilgrim
-        db.payments.insert_one({
+        db_instance.insert('payments', {
             "pilgrim_id": inserted_pilgrim.inserted_id,
             "transaction_id": f"TXN-{data['pilgrim_id']}",
-            "amount_paid": 0, # Initial
+            "amount_paid": 0,
             "payment_date": None,
             "method": "Pending",
             "status": "Pending"
         })
 
         return success_response(data={"pilgrim_id": pilgrim_id, "qr_path": qr_path}, message="Pilgrim registered", status_code=201)
+    except DuplicateKeyError as e:
+        field = "field"
+        if 'cnic' in str(e): field = "CNIC"
+        elif 'passport' in str(e): field = "Passport"
+        elif 'pilgrim_id' in str(e): field = "Pilgrim ID"
+        return error_response(f"Duplicate entry: This {field} is already registered.", 400)
     except Exception as e:
         return error_response(str(e))
 
