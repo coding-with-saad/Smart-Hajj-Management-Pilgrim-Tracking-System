@@ -8,26 +8,27 @@ dashboard_bp = Blueprint('dashboard', __name__)
 @dashboard_bp.route('/api/dashboard/stats', methods=['GET'])
 @login_required
 def get_stats():
-    total_pilgrims = db.pilgrims.count_documents({})
+    # 1. Total Registered Pilgrims (Actual Count)
+    total_registered = db.pilgrims.count_documents({})
     
-    # Simple aggregation for revenue (assuming some mock logic for now)
-    # In real app, sum up payments
-    total_revenue = 0
+    # 2. Total Revenue (ACTUAL SUM calculation from payments collection)
     pipeline = [
         {"$group": {"_id": None, "total": {"$sum": "$amount_paid"}}}
     ]
-    payment_stats = list(db.payments.aggregate(pipeline))
-    if payment_stats:
-        total_revenue = payment_stats[0]['total']
+    revenue_data = list(db.payments.aggregate(pipeline))
+    total_revenue = revenue_data[0]['total'] if revenue_data else 0
+    
+    # 3. Pending/Partial Payments (Count for the dashboard badge)
+    total_pending = db.payments.count_documents({"status": {"$in": ["Pending", "Partial", "Payment Pending", "Partial Payment"]}})
 
     stats = {
-        "total_pilgrims": total_pilgrims,
-        "total_revenue": total_revenue,
+        "total_pilgrims": total_registered,
+        "total_revenue": total_revenue, # Real money sum now
         "active_packages": db.packages.count_documents({}),
         "payment_distribution": {
-            "paid": db.payments.count_documents({"status": "Paid"}),
-            "partial": db.payments.count_documents({"status": "Partial"}),
-            "pending": db.payments.count_documents({"status": "Pending"})
+            "paid": db.payments.count_documents({"status": {"$in": ["Paid", "Fully Paid"]}}),
+            "partial": db.payments.count_documents({"status": {"$in": ["Partial", "Partial Payment"]}}),
+            "pending": db.payments.count_documents({"status": {"$in": ["Pending", "Payment Pending"]}})
         }
     }
     return success_response(data=stats)

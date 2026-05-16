@@ -23,7 +23,13 @@ document.addEventListener('DOMContentLoaded', function() {
             return;
         }
 
+        let countPaid = 0;
+        let countInProgress = 0;
+
         payments.forEach(p => {
+            if (p.status === 'Paid' || p.status === 'Fully Paid') countPaid++;
+            if (p.status === 'Partial' || p.status === 'Pending' || p.status === 'Partial Payment' || p.status === 'Payment Pending') countInProgress++;
+
             const row = `
                 <tr>
                     <td class="ps-4"><strong>${p.transaction_id}</strong></td>
@@ -36,6 +42,11 @@ document.addEventListener('DOMContentLoaded', function() {
             `;
             paymentTableBody.insertAdjacentHTML('beforeend', row);
         });
+
+        // Update Summary Counters
+        document.getElementById('ledger-registered').textContent = payments.length;
+        document.getElementById('ledger-paid').textContent = countPaid;
+        document.getElementById('ledger-pending').textContent = countInProgress;
     }
 
     // Status Lookup Logic

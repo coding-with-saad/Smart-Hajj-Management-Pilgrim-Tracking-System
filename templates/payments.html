@@ -19,23 +19,23 @@
 <div class="row g-4 mb-4">
     <div class="col-md-4">
         <div class="card premium-card border-0 shadow-sm p-4 text-center">
-            <div class="text-success mb-2"><i class="fas fa-check-circle fa-2x"></i></div>
-            <h5 class="text-muted small text-uppercase fw-600" title="Sum of all payments received from pilgrims">Total Collected</h5>
-            <h3 class="fw-700 mb-0">$4.5M</h3>
+            <div class="text-success mb-2"><i class="fas fa-user-check fa-2x"></i></div>
+            <h5 class="text-muted small text-uppercase fw-600" title="Total number of pilgrims currently registered in the directory">Total Registered</h5>
+            <h3 class="fw-700 mb-0" id="ledger-registered">0</h3>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card premium-card border-0 shadow-sm p-4 text-center">
-            <div class="text-warning mb-2"><i class="fas fa-hourglass-half fa-2x"></i></div>
-            <h5 class="text-muted small text-uppercase fw-600" title="Expected money that is yet to be paid by pilgrims (Package Price - Amount Paid)">Receivable</h5>
-            <h3 class="fw-700 mb-0">$1.2M</h3>
+            <div class="text-primary mb-2"><i class="fas fa-check-double fa-2x"></i></div>
+            <h5 class="text-muted small text-uppercase fw-600" title="Count of pilgrims who have completed their full payment">Fully Paid</h5>
+            <h3 class="fw-700 mb-0" id="ledger-paid">0</h3>
         </div>
     </div>
     <div class="col-md-4">
         <div class="card premium-card border-0 shadow-sm p-4 text-center">
-            <div class="text-primary mb-2"><i class="fas fa-file-invoice fa-2x"></i></div>
-            <h5 class="text-muted small text-uppercase fw-600" title="Count of pilgrims who have incomplete payments (Partial or Pending)">Active Invoices</h5>
-            <h3 class="fw-700 mb-0">148</h3>
+            <div class="text-warning mb-2"><i class="fas fa-clock fa-2x"></i></div>
+            <h5 class="text-muted small text-uppercase fw-600" title="Count of pilgrims with Pending or Partial payments">Pending/Partial</h5>
+            <h3 class="fw-700 mb-0" id="ledger-pending">0</h3>
         </div>
     </div>
 </div>

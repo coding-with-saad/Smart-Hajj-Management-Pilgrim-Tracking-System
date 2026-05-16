@@ -28,7 +28,7 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('stat-pilgrims').textContent = (data.total_pilgrims || 0).toLocaleString();
         document.getElementById('stat-revenue').textContent = '$' + (data.total_revenue || 0).toLocaleString();
         document.getElementById('stat-packages').textContent = data.active_packages || 0;
-        document.getElementById('stat-pending').textContent = data.payment_distribution.pending || 0;
+        document.getElementById('stat-pending').textContent = (data.payment_distribution.pending + data.payment_distribution.partial) || 0;
 
         // Render Chart
         const ctx = document.getElementById('paymentChart').getContext('2d');

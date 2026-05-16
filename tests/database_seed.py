@@ -15,12 +15,13 @@ def seed_data():
 
     # Seed Packages
     packages = [
+        {"name": "Social (Low Income)", "price": 1500, "features": ["Subsidized Azizia", "Group Transport"]},
         {"name": "Economy", "price": 3000, "features": ["Standard Azizia", "Bus Transport", "Buffet"]},
         {"name": "VIP", "price": 7500, "features": ["Haram View Hotel", "Private GMC", "Category A Mina"]},
         {"name": "Premium", "price": 12000, "features": ["Royal Suite", "Bullet Train", "Helicopter"]}
     ]
     db.packages.insert_many(packages)
-    print("Seeded 3 packages.")
+    print("Seeded 4 packages.")
 
     # Seed initial Pilgrim
     pilgrim = {
