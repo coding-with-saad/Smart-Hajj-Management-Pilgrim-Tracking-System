@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.warn('Backend API error, using mock fallback for presentation.');
+                toastr.warning("Live statistics unavailable. Using presentation fallback data.");
                 const mockStats = {
                     total_pilgrims: 150,
                     total_revenue: 4500000,

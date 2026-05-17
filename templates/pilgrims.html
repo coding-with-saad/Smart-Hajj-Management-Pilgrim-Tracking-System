@@ -13,6 +13,19 @@
     </button>
 </div>
 
+<!-- Discount Alert (Dynamic) -->
+<div id="discountBanner" class="alert alert-success border-0 shadow-sm rounded-4 d-none mb-4 animate__animated animate__pulse animate__infinite">
+    <div class="d-flex align-items-center">
+        <div class="bg-white text-success rounded-circle p-2 me-3" style="width: 40px; height: 40px; display: flex; align-items: center; justify-content: center;">
+            <i class="fas fa-gift"></i>
+        </div>
+        <div>
+            <h5 class="mb-0 fw-700">Special Discount Applied!</h5>
+            <p class="mb-0 small opacity-75">Your registration is flagged for a 10% ALKHAMS Welfare reduction.</p>
+        </div>
+    </div>
+</div>
+
 <!-- Search & Filter Card -->
 <div class="card premium-card border-0 shadow-sm mb-4">
     <div class="card-body p-4">
@@ -92,6 +105,23 @@
                         <div class="col-md-12">
                             <label class="form-label">Contact Number</label>
                             <input type="text" class="form-control bg-light border-0 py-2" id="contactNumber" required>
+                        </div>
+                    </div>
+                    
+                    <!-- Price Summary (Discount Flow) -->
+                    <div id="priceSummary" class="mt-4 p-3 bg-light rounded-4 d-none">
+                        <div class="d-flex justify-content-between mb-2">
+                            <span class="text-muted">Standard Package Price:</span>
+                            <span id="originalPrice" class="fw-600">$0</span>
+                        </div>
+                        <div class="d-flex justify-content-between text-success">
+                            <span class="fw-600"><i class="fas fa-percent me-1"></i> ALKHAMS Discount Applied:</span>
+                            <span id="discountAmount" class="fw-700">-$0</span>
+                        </div>
+                        <hr>
+                        <div class="d-flex justify-content-between align-items-center">
+                            <span class="h5 mb-0 fw-700">Final Adjusted Price:</span>
+                            <span id="finalPrice" class="h4 mb-0 text-primary fw-800">$0</span>
                         </div>
                     </div>
                 </div>

@@ -46,14 +46,30 @@ def create_pilgrim():
     try:
         inserted_pilgrim = db_instance.insert('pilgrims', data)
         
+        # Advanced Discount Engine: Handle Percent (%) and Flat ($) types
+        package_name = data.get('package')
+        dtype = data.get('discount_type', 'none')
+        dval = data.get('discount_value', 0)
+        
+        package = db.packages.find_one({"name": package_name})
+        original_price = package['price'] if package else 0
+        
+        let_discount_amt = 0
+        if dtype == 'percent':
+            let_discount_amt = (original_price * dval / 100)
+        elif dtype == 'flat':
+            let_discount_amt = dval
+            
+        final_price = max(0, original_price - let_discount_amt)
+
         # LINKING SYSTEM: Create an automatic payment record for the new pilgrim
         db_instance.insert('payments', {
             "pilgrim_id": inserted_pilgrim.inserted_id,
             "transaction_id": f"TXN-{data['pilgrim_id']}",
-            "amount_paid": 0,
-            "payment_date": None,
-            "method": "Pending",
-            "status": "Pending"
+            "amount_paid": final_price if data.get('status') == 'Paid' else 0,
+            "payment_date": datetime.now() if data.get('status') == 'Paid' else None,
+            "method": "Auto-Calculated" if data.get('status') == 'Paid' else "Pending",
+            "status": data.get('status', 'Pending')
         })
 
         return success_response(data={"pilgrim_id": pilgrim_id, "qr_path": qr_path}, message="Pilgrim registered", status_code=201)

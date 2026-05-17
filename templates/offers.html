@@ -14,6 +14,10 @@
     <!-- Offers will be loaded here -->
 </div>
 
+<!-- Hidden tracking fields -->
+<input type="hidden" id="selectedDiscountType">
+<input type="hidden" id="selectedDiscountValue">
+
 <!-- Appeal Modal -->
 <div class="modal fade" id="appealModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
@@ -23,17 +27,21 @@
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
             <div class="modal-body p-4">
-                <p>Submit your case for a specialized discount tier.</p>
+                <p>Submit your case for a specialized discount tier. Note: Discounts are reserved for pilgrims with monthly income below 100,000.</p>
                 <form id="appealForm">
                     <div class="mb-3">
-                        <label class="form-label">Pilgrim Name/ID</label>
-                        <input type="text" class="form-control bg-light border-0" required>
+                        <label class="form-label">Full Name</label>
+                        <input type="text" class="form-control bg-light border-0 py-2" id="appealName" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Monthly Salary (PKR)</label>
+                        <input type="number" class="form-control bg-light border-0 py-2" id="appealSalary" placeholder="e.g. 85000" required>
                     </div>
                     <div class="mb-3">
                         <label class="form-label">Reason for Appeal</label>
-                        <textarea class="form-control bg-light border-0" rows="3" placeholder="Briefly explain why you are applying for this discount..." required></textarea>
+                        <textarea class="form-control bg-light border-0 py-2" id="appealReason" rows="3" placeholder="Briefly explain why you are applying for this discount..." required></textarea>
                     </div>
-                    <button type="submit" class="btn btn-success w-100 rounded-pill py-2 fw-bold">Submit Appeal</button>
+                    <button type="submit" class="btn btn-success w-100 rounded-pill py-2 fw-bold" id="btnSubmitAppeal">Submit Appeal</button>
                 </form>
             </div>
         </div>
@@ -43,6 +51,23 @@
 
 {% block extra_js %}
 <script>
+    function selectOffer(title, discount) {
+        let type = "percent";
+        let value = 0;
+
+        if (discount.includes('%')) {
+            type = "percent";
+            value = parseInt(discount.replace('%', '').replace(' OFF', ''));
+        } else if (discount.includes('$')) {
+            type = "flat";
+            value = parseInt(discount.replace('$', '').replace(' Cashback', ''));
+        }
+
+        document.getElementById('selectedDiscountType').value = type;
+        document.getElementById('selectedDiscountValue').value = value;
+        document.querySelector('#appealModal .modal-title').innerHTML = `<i class="fas fa-hand-holding-usd me-2"></i> Appeal for ${title}`;
+    }
+
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('offersContainer');
 
@@ -62,7 +87,9 @@
                                     <hr>
                                     <div class="d-flex align-items-center justify-content-between">
                                         <small class="text-danger fw-600"><i class="fas fa-clock me-1"></i> Valid until: ${offer.valid_until}</small>
-                                        <button class="btn btn-sm btn-outline-success rounded-pill px-3" data-bs-toggle="modal" data-bs-target="#appealModal">Appeal Now</button>
+                                        <button class="btn btn-sm btn-outline-success rounded-pill px-3" 
+                                                onclick="selectOffer('${offer.title}', '${offer.discount}')"
+                                                data-bs-toggle="modal" data-bs-target="#appealModal">Appeal Now</button>
                                     </div>
                                 </div>
                             </div>
@@ -74,12 +101,27 @@
 
         document.getElementById('appealForm').addEventListener('submit', function(e) {
             e.preventDefault();
-            fetch('/api/offers/appeal', { method: 'POST' })
-                .then(r => r.json())
-                .then(res => {
-                    alert(res.message);
-                    bootstrap.Modal.getInstance(document.getElementById('appealModal')).hide();
-                });
+            
+            const salary = parseInt(document.getElementById('appealSalary').value);
+            const name = document.getElementById('appealName').value;
+
+            if (salary <= 100000) {
+                // Eligible!
+                const dtype = document.getElementById('selectedDiscountType').value;
+                const dval = document.getElementById('selectedDiscountValue').value;
+
+                toastr.success(`Congratulations ${name}! You are eligible for the ALKHAMS Welfare Discount.`);
+                toastr.info("Redirecting you to the registration portal...");
+                
+                // Redirect after a short delay so they see the notification
+                setTimeout(() => {
+                    window.location.href = `{{ url_for('pilgrims_ui') }}?dtype=${dtype}&dval=${dval}&name=${encodeURIComponent(name)}`;
+                }, 2000);
+            } else {
+                // Not eligible
+                toastr.error("Eligibility Check Failed: Monthly salary must be 100,000 PKR or less for this discount.");
+                bootstrap.Modal.getInstance(document.getElementById('appealModal')).hide();
+            }
         });
     });
 </script>

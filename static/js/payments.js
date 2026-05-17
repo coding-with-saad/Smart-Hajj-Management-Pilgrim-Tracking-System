@@ -58,25 +58,39 @@ document.addEventListener('DOMContentLoaded', function() {
     const statusBox = document.getElementById('statusBox');
 
     if (btnLookup) {
+        // Trigger lookup on button click
         btnLookup.addEventListener('click', function() {
-            const query = lookupInput.value.toLowerCase().trim();
-            if (!query) return;
+            performLookup();
+        });
 
-            const record = allPayments.find(p => p.pilgrim_name.toLowerCase().includes(query));
-
-            statusResult.classList.remove('d-none');
-            if (record) {
-                resultStatus.textContent = record.pilgrim_name;
-                resultBadge.textContent = record.status;
-                resultBadge.className = `badge rounded-pill px-3 py-2 mt-2 ${getStatusClass(record.status)}`;
-                statusBox.style.background = "#f8fafc";
-            } else {
-                resultStatus.textContent = "Record Not Found";
-                resultBadge.textContent = "N/A";
-                resultBadge.className = "badge bg-secondary rounded-pill px-3 py-2 mt-2";
-                statusBox.style.background = "#fff1f2";
+        // Trigger lookup on 'Enter' key press
+        lookupInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                performLookup();
             }
         });
+    }
+
+    function performLookup() {
+        const query = lookupInput.value.toLowerCase().trim();
+        if (!query) return;
+
+        const record = allPayments.find(p => p.pilgrim_name.toLowerCase().includes(query));
+
+        statusResult.classList.remove('d-none');
+        if (record) {
+            resultStatus.textContent = record.pilgrim_name;
+            resultBadge.textContent = record.status;
+            resultBadge.className = `badge rounded-pill px-3 py-2 mt-2 ${getStatusClass(record.status)}`;
+            statusBox.style.background = "#f8fafc";
+            toastr.success(`Financial record found for ${record.pilgrim_name}.`);
+        } else {
+            resultStatus.textContent = "Record Not Found";
+            resultBadge.textContent = "N/A";
+            resultBadge.className = "badge bg-secondary rounded-pill px-3 py-2 mt-2";
+            statusBox.style.background = "#fff1f2";
+            toastr.error("No record matches that name in the ledger.");
+        }
     }
 
     function getStatusClass(status) {

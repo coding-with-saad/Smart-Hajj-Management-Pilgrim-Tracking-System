@@ -19,14 +19,68 @@ document.addEventListener('DOMContentLoaded', function() {
             })
             .catch(error => {
                 console.error('Error fetching pilgrims:', error);
-                allPilgrims = [
-                    { pilgrim_id: 'PIL-001', name: 'Malik Saad Khawar', passport: 'AB1234567', package: 'VIP', status: 'Paid' }
-                ];
+                allPilgrims = [];
                 renderTable(allPilgrims);
+                toastr.error("Failed to connect to the database.");
             });
     }
 
     fetchPilgrims();
+
+    // URL Parameter Detection for Discount (Appeal Flow)
+    const urlParams = new URLSearchParams(window.location.search);
+    const dtype = urlParams.get('dtype');
+    const dval = urlParams.get('dval');
+    const pilgrimName = urlParams.get('name');
+
+    if (dtype && dval) {
+        document.getElementById('discountBanner').classList.remove('d-none');
+        document.getElementById('priceSummary').classList.remove('d-none');
+        
+        const bannerText = document.querySelector('#discountBanner p');
+        if (dtype === 'percent') {
+            bannerText.textContent = `Your registration is flagged for a ${dval}% reduction.`;
+        } else {
+            bannerText.textContent = `Your registration is flagged for a $${dval} flat cashback discount.`;
+        }
+
+        if (pilgrimName) {
+            document.getElementById('fullName').value = decodeURIComponent(pilgrimName);
+            const registrationModal = new bootstrap.Modal(document.getElementById('registrationModal'));
+            registrationModal.show();
+            toastr.info("Discount parameters applied automatically.");
+        }
+    }
+
+    // Dynamic Price Calculation
+    const packageTypeSelect = document.getElementById('packageType');
+    const prices = {
+        "Social (Low Income)": 1500,
+        "Economy": 3000,
+        "VIP": 7500,
+        "Premium": 12000
+    };
+
+    packageTypeSelect.addEventListener('change', function() {
+        if (dtype && dval) {
+            const selectedPackage = this.value;
+            const originalPrice = prices[selectedPackage] || 0;
+            const discountValue = parseInt(dval);
+            let discountAmt = 0;
+
+            if (dtype === 'percent') {
+                discountAmt = (originalPrice * discountValue) / 100;
+            } else {
+                discountAmt = discountValue;
+            }
+
+            const finalAmt = Math.max(0, originalPrice - discountAmt);
+
+            document.getElementById('originalPrice').textContent = `$${originalPrice.toLocaleString()}`;
+            document.getElementById('discountAmount').textContent = `-$${discountAmt.toLocaleString()}`;
+            document.getElementById('finalPrice').textContent = `$${finalAmt.toLocaleString()}`;
+        }
+    });
 
     // Filter Logic
     function filterPilgrims() {
@@ -50,26 +104,34 @@ document.addEventListener('DOMContentLoaded', function() {
 
     searchInput.addEventListener('input', filterPilgrims);
     packageFilter.addEventListener('change', filterPilgrims);
+    
+    // Add 'Enter' key support for search
+    searchInput.addEventListener('keypress', function(e) {
+        if (e.key === 'Enter') {
+            filterPilgrims();
+            toastr.info("Search results updated.");
+        }
+    });
 
     function renderTable(data) {
         pilgrimTableBody.innerHTML = '';
         if (data.length === 0) {
-            pilgrimTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted">No pilgrims found</td></tr>';
+            pilgrimTableBody.innerHTML = '<tr><td colspan="6" class="text-center text-muted p-4">No pilgrims found in directory</td></tr>';
             return;
         }
         data.forEach(p => {
             const row = `
                 <tr>
-                    <td><strong>${p.pilgrim_id}</strong></td>
+                    <td class="ps-4"><strong>${p.pilgrim_id}</strong></td>
                     <td>${p.name}</td>
                     <td>${p.passport}</td>
-                    <td><span class="badge bg-info text-dark">${p.package || 'N/A'}</span></td>
+                    <td><span class="badge bg-light text-dark border">${p.package || 'N/A'}</span></td>
                     <td><span class="badge ${getStatusClass(p.status || 'Pending')}">${p.status || 'Pending'}</span></td>
-                    <td class="text-end">
-                        <div class="btn-group btn-group-sm">
-                            <a href="/qr_details/${p.pilgrim_id}" class="btn btn-outline-secondary" title="View QR"><i class="fas fa-qrcode"></i></a>
-                            <button class="btn btn-outline-primary" title="Edit" onclick="openEditModal('${p.pilgrim_id}')"><i class="fas fa-edit"></i></button>
-                            <button class="btn btn-outline-danger" title="Delete" onclick="deletePilgrim('${p.pilgrim_id}')"><i class="fas fa-trash"></i></button>
+                    <td class="text-end pe-4">
+                        <div class="d-flex justify-content-end gap-2">
+                            <a href="/qr_details/${p.pilgrim_id}" class="btn-action bg-light text-secondary" title="View Digital Pass"><i class="fas fa-qrcode"></i></a>
+                            <button class="btn-action bg-light text-primary" title="Update Record" onclick="openEditModal('${p.pilgrim_id}')"><i class="fas fa-edit"></i></button>
+                            <button class="btn-action bg-light text-danger" title="Remove Pilgrim" onclick="deletePilgrim('${p.pilgrim_id}')"><i class="fas fa-trash"></i></button>
                         </div>
                     </td>
                 </tr>
@@ -80,9 +142,12 @@ document.addEventListener('DOMContentLoaded', function() {
 
     function getStatusClass(status) {
         switch(status) {
-            case 'Paid': return 'bg-success';
-            case 'Partial': return 'bg-warning text-dark';
-            case 'Pending': return 'bg-danger';
+            case 'Paid': 
+            case 'Fully Paid': return 'bg-success';
+            case 'Partial': 
+            case 'Partial Payment': return 'bg-warning text-dark';
+            case 'Pending': 
+            case 'Payment Pending': return 'bg-danger';
             default: return 'bg-secondary';
         }
     }
@@ -103,7 +168,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 cnic: document.getElementById('cnicNumber').value,
                 package: document.getElementById('packageType').value,
                 contact: document.getElementById('contactNumber').value,
-                status: "Pending"
+                status: "Pending",
+                discount_type: dtype || 'none',
+                discount_value: dval ? parseInt(dval) : 0
             };
 
             fetch('/api/pilgrims', {
@@ -118,9 +185,11 @@ document.addEventListener('DOMContentLoaded', function() {
                     modal.hide();
                     registrationForm.reset();
                     registrationForm.classList.remove('was-validated');
+                    window.history.replaceState({}, document.title, window.location.pathname);
                     fetchPilgrims();
+                    toastr.success(`Pilgrim "${formData.name}" has been successfully registered. Financial record initialized.`);
                 } else {
-                    alert('Error: ' + res.message);
+                    toastr.error(res.message);
                 }
             });
         });
@@ -166,21 +235,24 @@ document.addEventListener('DOMContentLoaded', function() {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
                     modal.hide();
                     fetchPilgrims();
-                    alert('Pilgrim updated successfully!');
+                    toastr.success(`Records for pilgrim ID ${id} have been updated and synchronized.`);
                 } else {
-                    alert('Error: ' + res.message);
+                    toastr.error(`Error: ${res.message}`);
                 }
             });
         });
     }
 
     window.deletePilgrim = function(id) {
-        if (confirm('Are you sure you want to delete this pilgrim?')) {
+        if (confirm(`Are you sure you want to permanently delete Pilgrim ${id}? All financial records and QR data will be erased.`)) {
             fetch(`/api/pilgrims/${id}`, { method: 'DELETE' })
                 .then(response => response.json())
                 .then(res => {
                     if (res.status === 'success') {
                         fetchPilgrims();
+                        toastr.warning(`Pilgrim ${id} and all associated data have been removed from the system.`);
+                    } else {
+                        toastr.error("Failed to delete record.");
                     }
                 });
         }
