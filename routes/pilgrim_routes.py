@@ -25,6 +25,12 @@ def create_pilgrim():
         if field not in data or not data[field]:
             return error_response(f"Field '{field}' is required", 400)
 
+    # Enforce String data types for core fields
+    string_fields = ['name', 'passport', 'cnic', 'contact']
+    for field in string_fields:
+        if field in data:
+            data[field] = str(data[field])
+
     # Validate package existence if provided
     if 'package' in data:
         package = db_instance.find_one('packages', {"name": data['package']})
