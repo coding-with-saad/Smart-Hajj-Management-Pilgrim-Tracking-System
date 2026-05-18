@@ -102,7 +102,19 @@
                                 <option value="Premium">Premium</option>
                             </select>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6">
+                            <label class="form-label">Payment Status</label>
+                            <select class="form-select bg-light border-0 py-2" id="regStatus" required>
+                                <option value="Pending">Payment Pending</option>
+                                <option value="Partial Payment">Partial Payment</option>
+                                <option value="Paid">Fully Paid</option>
+                            </select>
+                        </div>
+                        <div class="col-md-6 d-none" id="depositContainer">
+                            <label class="form-label text-primary fw-600">Initial Deposit ($)</label>
+                            <input type="number" class="form-control border-primary py-2" id="initialDeposit" placeholder="Enter amount">
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label">Contact Number</label>
                             <input type="text" class="form-control bg-light border-0 py-2" id="contactNumber" required>
                         </div>
@@ -110,6 +122,9 @@
                     
                     <!-- Price Summary (Discount Flow) -->
                     <div id="priceSummary" class="mt-4 p-3 bg-light rounded-4 d-none">
+                        <div id="groupInfo" class="d-none mb-2">
+                            <span class="badge bg-dark rounded-pill px-3">Group Registration: <span id="groupSizeValue">1</span> Members</span>
+                        </div>
                         <div class="d-flex justify-content-between mb-2">
                             <span class="text-muted">Standard Package Price:</span>
                             <span id="originalPrice" class="fw-600">$0</span>
@@ -167,11 +182,15 @@
                             <label class="form-label">Payment Status</label>
                             <select class="form-select bg-light border-0 py-2" id="editStatus" required>
                                 <option value="Paid">Fully Paid</option>
-                                <option value="Partial">Partial Payment</option>
+                                <option value="Partial Payment">Partial Payment</option>
                                 <option value="Pending">Payment Pending</option>
                             </select>
                         </div>
-                        <div class="col-md-12">
+                        <div class="col-md-6 d-none" id="editDepositContainer">
+                            <label class="form-label text-primary fw-600">Updated Deposit ($)</label>
+                            <input type="number" class="form-control border-primary py-2" id="editInitialDeposit">
+                        </div>
+                        <div class="col-md-6">
                             <label class="form-label">Contact Number</label>
                             <input type="text" class="form-control bg-light border-0 py-2" id="editContactNumber" required>
                         </div>

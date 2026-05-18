@@ -32,6 +32,7 @@ document.addEventListener('DOMContentLoaded', function() {
     const dtype = urlParams.get('dtype');
     const dval = urlParams.get('dval');
     const pilgrimName = urlParams.get('name');
+    const gsize = parseInt(urlParams.get('gsize')) || 1;
 
     if (dtype && dval) {
         document.getElementById('discountBanner').classList.remove('d-none');
@@ -40,8 +41,12 @@ document.addEventListener('DOMContentLoaded', function() {
         const bannerText = document.querySelector('#discountBanner p');
         if (dtype === 'percent') {
             bannerText.textContent = `Your registration is flagged for a ${dval}% reduction.`;
-        } else {
-            bannerText.textContent = `Your registration is flagged for a $${dval} flat cashback discount.`;
+        } else if (dtype === 'flat') {
+            bannerText.textContent = `Your registration is flagged for a $${dval} reduction.`;
+        } else if (dtype === 'group') {
+            bannerText.textContent = `Group Discount Applied: $${dval} off for the total group of ${gsize}.`;
+            document.getElementById('groupInfo').classList.remove('d-none');
+            document.getElementById('groupSizeValue').textContent = gsize;
         }
 
         if (pilgrimName) {
@@ -50,6 +55,34 @@ document.addEventListener('DOMContentLoaded', function() {
             registrationModal.show();
             toastr.info("Discount parameters applied automatically.");
         }
+    }
+
+    // Toggle Deposit field based on status (Registration)
+    const regStatus = document.getElementById('regStatus');
+    const depositContainer = document.getElementById('depositContainer');
+    if (regStatus) {
+        regStatus.addEventListener('change', function() {
+            if (this.value === 'Partial Payment') {
+                depositContainer.classList.remove('d-none');
+                document.getElementById('initialDeposit').setAttribute('required', 'required');
+            } else {
+                depositContainer.classList.add('d-none');
+                document.getElementById('initialDeposit').removeAttribute('required');
+            }
+        });
+    }
+
+    // Toggle Deposit field based on status (Edit)
+    const editStatus = document.getElementById('editStatus');
+    const editDepositContainer = document.getElementById('editDepositContainer');
+    if (editStatus) {
+        editStatus.addEventListener('change', function() {
+            if (this.value === 'Partial Payment') {
+                editDepositContainer.classList.remove('d-none');
+            } else {
+                editDepositContainer.classList.add('d-none');
+            }
+        });
     }
 
     // Dynamic Price Calculation
@@ -61,26 +94,28 @@ document.addEventListener('DOMContentLoaded', function() {
         "Premium": 12000
     };
 
-    packageTypeSelect.addEventListener('change', function() {
-        if (dtype && dval) {
-            const selectedPackage = this.value;
-            const originalPrice = prices[selectedPackage] || 0;
-            const discountValue = parseInt(dval);
-            let discountAmt = 0;
-
-            if (dtype === 'percent') {
-                discountAmt = (originalPrice * discountValue) / 100;
-            } else {
-                discountAmt = discountValue;
-            }
-
-            const finalAmt = Math.max(0, originalPrice - discountAmt);
-
-            document.getElementById('originalPrice').textContent = `$${originalPrice.toLocaleString()}`;
-            document.getElementById('discountAmount').textContent = `-$${discountAmt.toLocaleString()}`;
-            document.getElementById('finalPrice').textContent = `$${finalAmt.toLocaleString()}`;
+    function calculateFinalPrice() {
+        const selectedPackage = packageTypeSelect.value;
+        const basePrice = prices[selectedPackage] || 0;
+        const totalBasePrice = basePrice * gsize;
+        
+        let discountAmt = 0;
+        if (dtype === 'percent') {
+            discountAmt = (totalBasePrice * parseInt(dval)) / 100;
+        } else if (dtype === 'flat' || dtype === 'group') {
+            discountAmt = parseInt(dval);
         }
-    });
+
+        const finalAmt = Math.max(0, totalBasePrice - discountAmt);
+
+        document.getElementById('originalPrice').textContent = `$${totalBasePrice.toLocaleString()}`;
+        document.getElementById('discountAmount').textContent = `-$${discountAmt.toLocaleString()}`;
+        document.getElementById('finalPrice').textContent = `$${finalAmt.toLocaleString()}`;
+    }
+
+    if (packageTypeSelect) {
+        packageTypeSelect.addEventListener('change', calculateFinalPrice);
+    }
 
     // Filter Logic
     function filterPilgrims() {
@@ -168,7 +203,9 @@ document.addEventListener('DOMContentLoaded', function() {
                 cnic: document.getElementById('cnicNumber').value,
                 package: document.getElementById('packageType').value,
                 contact: document.getElementById('contactNumber').value,
-                status: "Pending",
+                status: document.getElementById('regStatus').value,
+                initial_deposit: document.getElementById('initialDeposit').value || 0,
+                group_size: gsize,
                 discount_type: dtype || 'none',
                 discount_value: dval ? parseInt(dval) : 0
             };
@@ -187,7 +224,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     registrationForm.classList.remove('was-validated');
                     window.history.replaceState({}, document.title, window.location.pathname);
                     fetchPilgrims();
-                    toastr.success(`Pilgrim "${formData.name}" has been successfully registered. Financial record initialized.`);
+                    toastr.success(`Pilgrim "${formData.name}" registered. Initial financial records created.`);
                 } else {
                     toastr.error(res.message);
                 }
@@ -206,6 +243,15 @@ document.addEventListener('DOMContentLoaded', function() {
         document.getElementById('editPackageType').value = pilgrim.package || '';
         document.getElementById('editContactNumber').value = pilgrim.contact || '';
         document.getElementById('editStatus').value = pilgrim.status || 'Pending';
+        
+        // Handle deposit field visibility and value
+        const deposit = pilgrim.initial_deposit || 0;
+        document.getElementById('editInitialDeposit').value = deposit;
+        if (pilgrim.status === 'Partial Payment') {
+            editDepositContainer.classList.remove('d-none');
+        } else {
+            editDepositContainer.classList.add('d-none');
+        }
 
         const editModal = new bootstrap.Modal(document.getElementById('editModal'));
         editModal.show();
@@ -221,7 +267,8 @@ document.addEventListener('DOMContentLoaded', function() {
                 passport: document.getElementById('editPassportNumber').value,
                 package: document.getElementById('editPackageType').value,
                 contact: document.getElementById('editContactNumber').value,
-                status: document.getElementById('editStatus').value
+                status: document.getElementById('editStatus').value,
+                initial_deposit: document.getElementById('editInitialDeposit').value || 0
             };
 
             fetch(`/api/pilgrims/${id}`, {
@@ -235,7 +282,7 @@ document.addEventListener('DOMContentLoaded', function() {
                     const modal = bootstrap.Modal.getInstance(document.getElementById('editModal'));
                     modal.hide();
                     fetchPilgrims();
-                    toastr.success(`Records for pilgrim ID ${id} have been updated and synchronized.`);
+                    toastr.success(`Records for pilgrim ID ${id} updated.`);
                 } else {
                     toastr.error(`Error: ${res.message}`);
                 }
@@ -244,13 +291,13 @@ document.addEventListener('DOMContentLoaded', function() {
     }
 
     window.deletePilgrim = function(id) {
-        if (confirm(`Are you sure you want to permanently delete Pilgrim ${id}? All financial records and QR data will be erased.`)) {
+        if (confirm(`Are you sure you want to permanently delete Pilgrim ${id}?`)) {
             fetch(`/api/pilgrims/${id}`, { method: 'DELETE' })
                 .then(response => response.json())
                 .then(res => {
                     if (res.status === 'success') {
                         fetchPilgrims();
-                        toastr.warning(`Pilgrim ${id} and all associated data have been removed from the system.`);
+                        toastr.warning(`Pilgrim ${id} removed.`);
                     } else {
                         toastr.error("Failed to delete record.");
                     }

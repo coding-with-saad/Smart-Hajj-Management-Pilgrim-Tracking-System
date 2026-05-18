@@ -30,11 +30,19 @@ document.addEventListener('DOMContentLoaded', function() {
             if (p.status === 'Paid' || p.status === 'Fully Paid') countPaid++;
             if (p.status === 'Partial' || p.status === 'Pending' || p.status === 'Partial Payment' || p.status === 'Payment Pending') countInProgress++;
 
+            let amountDisplay = `$${(p.amount || 0).toLocaleString()}`;
+            if (p.status.includes('Partial')) {
+                amountDisplay = `<div class="d-flex flex-column">
+                                    <span class="fw-800 text-dark">$${(p.amount || 0).toLocaleString()}</span>
+                                    <small class="text-muted" style="font-size: 0.65rem;">Initial Deposit</small>
+                                 </div>`;
+            }
+
             const row = `
                 <tr>
                     <td class="ps-4"><strong>${p.transaction_id}</strong></td>
                     <td>${p.pilgrim_name}</td>
-                    <td class="fw-bold">$${(p.amount || 0).toLocaleString()}</td>
+                    <td class="fw-bold">${amountDisplay}</td>
                     <td><span class="badge bg-light text-dark border"><i class="fas fa-money-check-alt me-1 text-primary"></i> ${p.method}</span></td>
                     <td>${p.date || 'Processing'}</td>
                     <td><span class="badge ${getStatusClass(p.status)}">${p.status}</span></td>

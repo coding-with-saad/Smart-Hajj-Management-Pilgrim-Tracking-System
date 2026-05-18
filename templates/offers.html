@@ -37,6 +37,10 @@
                         <label class="form-label">Monthly Salary (PKR)</label>
                         <input type="number" class="form-control bg-light border-0 py-2" id="appealSalary" placeholder="e.g. 85000" required>
                     </div>
+                    <div class="mb-3 d-none" id="groupSizeContainer">
+                        <label class="form-label">Group Size (Minimum 5)</label>
+                        <input type="number" class="form-control bg-light border-0 py-2" id="appealGroupSize" min="5" value="5">
+                    </div>
                     <div class="mb-3">
                         <label class="form-label">Reason for Appeal</label>
                         <textarea class="form-control bg-light border-0 py-2" id="appealReason" rows="3" placeholder="Briefly explain why you are applying for this discount..." required></textarea>
@@ -54,13 +58,24 @@
     function selectOffer(title, discount) {
         let type = "percent";
         let value = 0;
+        const groupSizeContainer = document.getElementById('groupSizeContainer');
+        const groupSizeInput = document.getElementById('appealGroupSize');
 
-        if (discount.includes('%')) {
-            type = "percent";
-            value = parseInt(discount.replace('%', '').replace(' OFF', ''));
-        } else if (discount.includes('$')) {
-            type = "flat";
-            value = parseInt(discount.replace('$', '').replace(' Cashback', ''));
+        if (title.includes('Group')) {
+            type = "group";
+            value = 500; // Flat $500 off for the whole group
+            groupSizeContainer.classList.remove('d-none');
+            groupSizeInput.setAttribute('required', 'required');
+        } else {
+            groupSizeContainer.classList.add('d-none');
+            groupSizeInput.removeAttribute('required');
+            if (discount.includes('%')) {
+                type = "percent";
+                value = parseInt(discount.replace('%', '').replace(' OFF', ''));
+            } else if (discount.includes('$')) {
+                type = "flat";
+                value = parseInt(discount.replace('$', '').replace(' Cashback', ''));
+            }
         }
 
         document.getElementById('selectedDiscountType').value = type;
@@ -109,13 +124,14 @@
                 // Eligible!
                 const dtype = document.getElementById('selectedDiscountType').value;
                 const dval = document.getElementById('selectedDiscountValue').value;
+                const gsize = document.getElementById('appealGroupSize').value || 1;
 
                 toastr.success(`Congratulations ${name}! You are eligible for the ALKHAMS Welfare Discount.`);
                 toastr.info("Redirecting you to the registration portal...");
                 
                 // Redirect after a short delay so they see the notification
                 setTimeout(() => {
-                    window.location.href = `{{ url_for('pilgrims_ui') }}?dtype=${dtype}&dval=${dval}&name=${encodeURIComponent(name)}`;
+                    window.location.href = `{{ url_for('pilgrims_ui') }}?dtype=${dtype}&dval=${dval}&name=${encodeURIComponent(name)}&gsize=${gsize}`;
                 }, 2000);
             } else {
                 // Not eligible

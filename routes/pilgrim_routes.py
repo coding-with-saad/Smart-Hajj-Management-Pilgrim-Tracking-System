@@ -52,33 +52,43 @@ def create_pilgrim():
     try:
         inserted_pilgrim = db_instance.insert('pilgrims', data)
         
-        # Advanced Discount Engine: Handle Percent (%) and Flat ($) types
+        # ADVANCED PRICING ENGINE
         package_name = data.get('package')
         dtype = data.get('discount_type', 'none')
         dval = data.get('discount_value', 0)
+        group_size = int(data.get('group_size', 1))
+        initial_deposit = float(data.get('initial_deposit', 0))
+        status = data.get('status', 'Pending')
         
         package = db.packages.find_one({"name": package_name})
-        original_price = package['price'] if package else 0
+        base_price_per_person = package['price'] if package else 0
+        total_group_price = base_price_per_person * group_size
         
-        let_discount_amt = 0
+        discount_amt = 0
         if dtype == 'percent':
-            let_discount_amt = (original_price * dval / 100)
-        elif dtype == 'flat':
-            let_discount_amt = dval
+            discount_amt = (total_group_price * dval / 100)
+        elif dtype == 'flat' or dtype == 'group':
+            discount_amt = dval
             
-        final_price = max(0, original_price - let_discount_amt)
+        final_adjusted_total = max(0, total_group_price - discount_amt)
 
-        # LINKING SYSTEM: Create an automatic payment record for the new pilgrim
+        # LINKING SYSTEM: Determine actual cash received
+        actual_cash = 0
+        if status == 'Paid' or status == 'Fully Paid':
+            actual_cash = final_adjusted_total
+        elif status == 'Partial' or status == 'Partial Payment':
+            actual_cash = initial_deposit
+
         db_instance.insert('payments', {
             "pilgrim_id": inserted_pilgrim.inserted_id,
             "transaction_id": f"TXN-{data['pilgrim_id']}",
-            "amount_paid": final_price if data.get('status') == 'Paid' else 0,
-            "payment_date": datetime.now() if data.get('status') == 'Paid' else None,
-            "method": "Auto-Calculated" if data.get('status') == 'Paid' else "Pending",
-            "status": data.get('status', 'Pending')
+            "amount_paid": actual_cash,
+            "payment_date": datetime.now() if actual_cash > 0 else None,
+            "method": "Initial Deposit" if status == 'Partial Payment' else "Auto-Calculated",
+            "status": status
         })
 
-        return success_response(data={"pilgrim_id": pilgrim_id, "qr_path": qr_path}, message="Pilgrim registered", status_code=201)
+        return success_response(data={"pilgrim_id": pilgrim_id, "qr_path": qr_path}, message="Pilgrim registered & linked", status_code=201)
     except DuplicateKeyError as e:
         field = "field"
         if 'cnic' in str(e): field = "CNIC"
@@ -110,19 +120,25 @@ def update_pilgrim(id):
     if 'status' in data:
         pilgrim = db.pilgrims.find_one({"pilgrim_id": id})
         if pilgrim:
-            db.payments.update_one(
-                {"pilgrim_id": pilgrim['_id']},
-                {"$set": {"status": data['status']}}
-            )
+            status = data['status']
+            update_fields = {"status": status}
             
             # Logic: If status is 'Paid', update the amount based on package price
-            if data['status'] == 'Paid':
+            if status == 'Paid' or status == 'Fully Paid':
                 package = db.packages.find_one({"name": pilgrim.get('package')})
                 if package:
-                    db.payments.update_one(
-                        {"pilgrim_id": pilgrim['_id']},
-                        {"$set": {"amount_paid": package['price'], "method": "Updated via Admin"}}
-                    )
+                    update_fields["amount_paid"] = package['price']
+                    update_fields["method"] = "Fully Paid via Admin"
+            elif status == 'Partial' or status == 'Partial Payment':
+                # Use provided initial deposit or keep previous
+                if 'initial_deposit' in data:
+                    update_fields["amount_paid"] = float(data['initial_deposit'])
+                    update_fields["method"] = "Partial Deposit via Admin"
+
+            db.payments.update_one(
+                {"pilgrim_id": pilgrim['_id']},
+                {"$set": update_fields}
+            )
 
     if result.matched_count == 0:
         return error_response("Pilgrim not found", 404)
