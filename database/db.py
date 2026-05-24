@@ -37,12 +37,13 @@ class Database:
         # Seed packages
         if self.db.packages.count_documents({}) == 0:
             self.db.packages.insert_many([
-                {"name": "Social (Low Income)", "price": 1500, "features": ["Subsidized Housing", "Shared Transport"]},
-                {"name": "Economy", "price": 3000, "features": ["Standard Accommodation", "Shared Transport"]},
-                {"name": "VIP", "price": 7500, "features": ["5-Star Hotel", "Private Transport"]},
-                {"name": "Premium", "price": 12000, "features": ["Luxury Suite", "High-Speed Rail"]}
+                {"name": "Social (Low Income)", "price": 1500, "features": ["Subsidized Housing", "Group Transport"]},
+                {"name": "Economy", "price": 3000, "features": ["Standard Azizia", "Bus Transport", "Buffet"]},
+                {"name": "VIP", "price": 7500, "features": ["Haram View Hotel", "Private GMC", "Category A Mina"]},
+                {"name": "Premium", "price": 12000, "features": ["Royal Suite", "Bullet Train", "Helicopter"]}
             ])
             print("Default packages (4) seeded.")
+
 
     # CRUD Wrappers
     def insert(self, collection, data):

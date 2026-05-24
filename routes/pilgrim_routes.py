@@ -52,30 +52,36 @@ def create_pilgrim():
     try:
         inserted_pilgrim = db_instance.insert('pilgrims', data)
         
-        # ADVANCED PRICING ENGINE
+        # --- ROBUST PRICING ENGINE ---
         package_name = data.get('package')
         dtype = data.get('discount_type', 'none')
-        dval = data.get('discount_value', 0)
+        dval = float(data.get('discount_value', 0))
         group_size = int(data.get('group_size', 1))
         initial_deposit = float(data.get('initial_deposit', 0))
         status = data.get('status', 'Pending')
         
-        package = db.packages.find_one({"name": package_name})
-        base_price_per_person = package['price'] if package else 0
-        total_group_price = base_price_per_person * group_size
-        
-        discount_amt = 0
+        # REQUIREMENT LOCK: Ramadan Special (percent) is ONLY for 1 person
         if dtype == 'percent':
-            discount_amt = (total_group_price * dval / 100)
+            group_size = 1 # Force single person for Ramadan
+            
+        package = db.packages.find_one({"name": package_name})
+        base_price_unit = float(package['price']) if package else 0.0
+        total_before_discount = base_price_unit * group_size
+        
+        discount_amt = 0.0
+        if dtype == 'percent':
+            discount_amt = (total_before_discount * dval / 100)
         elif dtype == 'flat' or dtype == 'group':
             discount_amt = dval
             
-        final_adjusted_total = max(0, total_group_price - discount_amt)
+        final_total = max(0.0, total_before_discount - discount_amt)
+
+        print(f"DEBUG PRICING: Pkg={package_name}, Unit={base_price_unit}, GSize={group_size}, DiscType={dtype}, Final={final_total}")
 
         # LINKING SYSTEM: Determine actual cash received
-        actual_cash = 0
+        actual_cash = 0.0
         if status == 'Paid' or status == 'Fully Paid':
-            actual_cash = final_adjusted_total
+            actual_cash = final_total
         elif status == 'Partial' or status == 'Partial Payment':
             actual_cash = initial_deposit
 

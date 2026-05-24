@@ -11,43 +11,56 @@
 </div>
 
 <div class="row g-4" id="offersContainer">
-    <!-- Offers will be loaded here -->
+    <!-- Offers will be loaded here via JS -->
+    <div class="col-12 text-center py-5" id="loader">
+        <div class="spinner-border text-primary" role="status">
+            <span class="visually-hidden">Loading offers...</span>
+        </div>
+    </div>
 </div>
-
-<!-- Hidden tracking fields -->
-<input type="hidden" id="selectedDiscountType">
-<input type="hidden" id="selectedDiscountValue">
 
 <!-- Appeal Modal -->
 <div class="modal fade" id="appealModal" tabindex="-1" aria-hidden="true">
     <div class="modal-dialog modal-dialog-centered">
-        <div class="modal-content border-0 rounded-4">
+        <div class="modal-content border-0 rounded-4 shadow-lg">
             <div class="modal-header bg-success text-white">
-                <h5 class="modal-title fw-600"><i class="fas fa-hand-holding-usd me-2"></i> Appeal for Discount</h5>
+                <h5 class="modal-title fw-600"><i class="fas fa-hand-holding-usd me-2"></i> Submit Application</h5>
                 <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
             </div>
-            <div class="modal-body p-4">
-                <p>Submit your case for a specialized discount tier. Note: Discounts are reserved for pilgrims with monthly income below 100,000.</p>
-                <form id="appealForm">
+            <form id="appealForm">
+                <!-- State tracking hidden fields -->
+                <input type="hidden" id="selectedDType">
+                <input type="hidden" id="selectedDVal">
+                <input type="hidden" id="selectedOfferTitle">
+
+                <div class="modal-body p-4">
+                    <p class="text-muted small mb-4">Discounts are reserved for pilgrims with a monthly income of 100,000 PKR or less.</p>
+                    
                     <div class="mb-3">
                         <label class="form-label">Full Name</label>
-                        <input type="text" class="form-control bg-light border-0 py-2" id="appealName" required>
+                        <input type="text" class="form-control bg-light border-0 py-2" id="appealName" required autocomplete="off">
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label">Monthly Salary (PKR)</label>
-                        <input type="number" class="form-control bg-light border-0 py-2" id="appealSalary" placeholder="e.g. 85000" required>
+                        <input type="number" class="form-control bg-light border-0 py-2" id="appealSalary" placeholder="e.g. 85000" required autocomplete="off">
                     </div>
-                    <div class="mb-3 d-none" id="groupSizeContainer">
-                        <label class="form-label">Group Size (Minimum 5)</label>
-                        <input type="number" class="form-control bg-light border-0 py-2" id="appealGroupSize" min="5" value="5">
+                    
+                    <div class="mb-3 d-none" id="groupSizeBox">
+                        <label class="form-label text-primary fw-600">Group Size (Minimum 5)</label>
+                        <input type="number" class="form-control border-primary py-2" id="groupCount" value="1" autocomplete="off">
                     </div>
+                    
                     <div class="mb-3">
                         <label class="form-label">Reason for Appeal</label>
-                        <textarea class="form-control bg-light border-0 py-2" id="appealReason" rows="3" placeholder="Briefly explain why you are applying for this discount..." required></textarea>
+                        <textarea class="form-control bg-light border-0 py-2" id="appealReason" rows="3" placeholder="Briefly explain your situation..." required autocomplete="off"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-success w-100 rounded-pill py-2 fw-bold" id="btnSubmitAppeal">Submit Appeal</button>
-                </form>
-            </div>
+                </div>
+                <div class="modal-footer border-0 p-4 pt-0">
+                    <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-success rounded-pill px-5 shadow-sm" id="btnConfirmAppeal">Submit Appeal</button>
+                </div>
+            </form>
         </div>
     </div>
 </div>
@@ -55,40 +68,16 @@
 
 {% block extra_js %}
 <script>
-    function selectOffer(title, discount) {
-        let type = "percent";
-        let value = 0;
-        const groupSizeContainer = document.getElementById('groupSizeContainer');
-        const groupSizeInput = document.getElementById('appealGroupSize');
-
-        if (title.includes('Group')) {
-            type = "group";
-            value = 500; // Flat $500 off for the whole group
-            groupSizeContainer.classList.remove('d-none');
-            groupSizeInput.setAttribute('required', 'required');
-        } else {
-            groupSizeContainer.classList.add('d-none');
-            groupSizeInput.removeAttribute('required');
-            if (discount.includes('%')) {
-                type = "percent";
-                value = parseInt(discount.replace('%', '').replace(' OFF', ''));
-            } else if (discount.includes('$')) {
-                type = "flat";
-                value = parseInt(discount.replace('$', '').replace(' Cashback', ''));
-            }
-        }
-
-        document.getElementById('selectedDiscountType').value = type;
-        document.getElementById('selectedDiscountValue').value = value;
-        document.querySelector('#appealModal .modal-title').innerHTML = `<i class="fas fa-hand-holding-usd me-2"></i> Appeal for ${title}`;
-    }
-
     document.addEventListener('DOMContentLoaded', function() {
         const container = document.getElementById('offersContainer');
+        const loader = document.getElementById('loader');
+        const appealForm = document.getElementById('appealForm');
 
+        // 1. Fetch and Render Offers
         fetch('/api/offers')
             .then(response => response.json())
             .then(res => {
+                if (loader) loader.remove();
                 if (res.status === 'success') {
                     res.data.forEach(offer => {
                         const card = `
@@ -102,9 +91,9 @@
                                     <hr>
                                     <div class="d-flex align-items-center justify-content-between">
                                         <small class="text-danger fw-600"><i class="fas fa-clock me-1"></i> Valid until: ${offer.valid_until}</small>
-                                        <button class="btn btn-sm btn-outline-success rounded-pill px-3" 
-                                                onclick="selectOffer('${offer.title}', '${offer.discount}')"
-                                                data-bs-toggle="modal" data-bs-target="#appealModal">Appeal Now</button>
+                                        <button class="btn btn-sm btn-outline-success rounded-pill px-3 btn-init-appeal" 
+                                                data-title="${offer.title}" 
+                                                data-discount="${offer.discount}">Appeal Now</button>
                                     </div>
                                 </div>
                             </div>
@@ -112,33 +101,74 @@
                         container.insertAdjacentHTML('beforeend', card);
                     });
                 }
+            })
+            .catch(err => {
+                toastr.error("Could not load offers. Please check connection.");
             });
 
-        document.getElementById('appealForm').addEventListener('submit', function(e) {
-            e.preventDefault();
-            
-            const salary = parseInt(document.getElementById('appealSalary').value);
-            const name = document.getElementById('appealName').value;
-
-            if (salary <= 100000) {
-                // Eligible!
-                const dtype = document.getElementById('selectedDiscountType').value;
-                const dval = document.getElementById('selectedDiscountValue').value;
-                const gsize = document.getElementById('appealGroupSize').value || 1;
-
-                toastr.success(`Congratulations ${name}! You are eligible for the ALKHAMS Welfare Discount.`);
-                toastr.info("Redirecting you to the registration portal...");
+        // 2. Handle "Appeal Now" Click (Event Delegation)
+        container.addEventListener('click', function(e) {
+            if (e.target.classList.contains('btn-init-appeal')) {
+                const title = e.target.getAttribute('data-title');
+                const discount = e.target.getAttribute('data-discount');
                 
-                // Redirect after a short delay so they see the notification
-                setTimeout(() => {
-                    window.location.href = `{{ url_for('pilgrims_ui') }}?dtype=${dtype}&dval=${dval}&name=${encodeURIComponent(name)}&gsize=${gsize}`;
-                }, 2000);
-            } else {
-                // Not eligible
-                toastr.error("Eligibility Check Failed: Monthly salary must be 100,000 PKR or less for this discount.");
-                bootstrap.Modal.getInstance(document.getElementById('appealModal')).hide();
+                console.log("Initializing appeal for:", title);
+                
+                const groupBox = document.getElementById('groupSizeBox');
+                const groupInput = document.getElementById('groupCount');
+                const dtypeInput = document.getElementById('selectedDType');
+                const dvalInput = document.getElementById('selectedDVal');
+                
+                document.getElementById('selectedOfferTitle').value = title;
+                
+                if (title.toLowerCase().includes('group')) {
+                    // Group Logic
+                    dtypeInput.value = "group";
+                    dvalInput.value = 500;
+                    groupBox.classList.remove('d-none');
+                    groupInput.setAttribute('min', '5');
+                    groupInput.value = 5; // Start at 5
+                } else {
+                    // Single Person Logic (Ramadan)
+                    dtypeInput.value = "percent";
+                    dvalInput.value = 15;
+                    groupBox.classList.add('d-none');
+                    groupInput.removeAttribute('min');
+                    groupInput.value = 1; // FORCE 1
+                }
+
+                document.querySelector('#appealModal .modal-title').textContent = `Appeal for ${title}`;
+                const modal = new bootstrap.Modal(document.getElementById('appealModal'));
+                modal.show();
             }
         });
+
+        // 3. Handle Final Form Submission
+        if (appealForm) {
+            appealForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                
+                const salary = parseInt(document.getElementById('appealSalary').value);
+                const name = document.getElementById('appealName').value;
+                const dtype = document.getElementById('selectedDType').value;
+                const dval = document.getElementById('selectedDVal').value;
+                const gsize = document.getElementById('groupCount').value;
+
+                if (salary <= 100000) {
+                    toastr.success(`Congratulations ${name}! You are eligible for the ALKHAMS Welfare Discount.`);
+                    toastr.info("Redirecting you to the registration portal...");
+                    
+                    // Redirect with parameters
+                    setTimeout(() => {
+                        const targetUrl = `{{ url_for('pilgrims_ui') }}?dtype=${dtype}&dval=${dval}&name=${encodeURIComponent(name)}&gsize=${gsize}`;
+                        window.location.href = targetUrl;
+                    }, 2000);
+                } else {
+                    toastr.error("Ineligible: Monthly salary exceeds the welfare threshold.");
+                    bootstrap.Modal.getInstance(document.getElementById('appealModal')).hide();
+                }
+            });
+        }
     });
 </script>
 {% endblock %}

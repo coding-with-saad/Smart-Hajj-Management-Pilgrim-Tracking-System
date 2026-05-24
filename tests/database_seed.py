@@ -1,5 +1,6 @@
 import os
 from pymongo import MongoClient
+from datetime import datetime
 from dotenv import load_dotenv
 
 load_dotenv()
@@ -13,17 +14,17 @@ def seed_data():
     db.payments.delete_many({})
     db.packages.delete_many({})
 
-    # Seed Packages
+    # Seed 4 Standard Packages (Matches UI requirement)
     packages = [
-        {"name": "Social (Low Income)", "price": 1500, "features": ["Subsidized Azizia", "Group Transport"]},
+        {"name": "Social (Low Income)", "price": 1500, "features": ["Subsidized Housing", "Group Transport"]},
         {"name": "Economy", "price": 3000, "features": ["Standard Azizia", "Bus Transport", "Buffet"]},
         {"name": "VIP", "price": 7500, "features": ["Haram View Hotel", "Private GMC", "Category A Mina"]},
         {"name": "Premium", "price": 12000, "features": ["Royal Suite", "Bullet Train", "Helicopter"]}
     ]
     db.packages.insert_many(packages)
-    print("Seeded 4 packages.")
+    print("Seeded 4 professional packages.")
 
-    # Seed initial Pilgrim
+    # Seed initial Pilgrim with today's date for the report generator
     pilgrim = {
         "pilgrim_id": "PIL-001",
         "name": "Malik Saad Khawar",
@@ -31,7 +32,11 @@ def seed_data():
         "cnic": "12345-6789012-3",
         "package": "VIP",
         "contact": "0300-1234567",
-        "status": "Paid"
+        "status": "Paid",
+        "created_at": datetime.now(),
+        "group_size": 1,
+        "discount_type": "none",
+        "discount_value": 0
     }
     result = db.pilgrims.insert_one(pilgrim)
     
@@ -40,11 +45,11 @@ def seed_data():
         "pilgrim_id": result.inserted_id,
         "transaction_id": "TXN-PIL-001",
         "amount_paid": 7500,
-        "payment_date": None,
+        "payment_date": datetime.now(),
         "method": "Seeded Data",
         "status": "Paid"
     })
-    print("Seeded initial pilgrim and payment.")
+    print("Seeded initial pilgrim and payment with live timestamp.")
 
 if __name__ == "__main__":
     seed_data()

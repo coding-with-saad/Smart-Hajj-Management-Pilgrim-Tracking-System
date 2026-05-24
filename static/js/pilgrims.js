@@ -31,7 +31,6 @@ document.addEventListener('DOMContentLoaded', function() {
     const urlParams = new URLSearchParams(window.location.search);
     const dtype = urlParams.get('dtype');
     const dval = urlParams.get('dval');
-    const pilgrimName = urlParams.get('name');
     const gsize = parseInt(urlParams.get('gsize')) || 1;
 
     if (dtype && dval) {
@@ -49,12 +48,10 @@ document.addEventListener('DOMContentLoaded', function() {
             document.getElementById('groupSizeValue').textContent = gsize;
         }
 
-        if (pilgrimName) {
-            document.getElementById('fullName').value = decodeURIComponent(pilgrimName);
-            const registrationModal = new bootstrap.Modal(document.getElementById('registrationModal'));
-            registrationModal.show();
-            toastr.info("Discount parameters applied automatically.");
-        }
+        // Open modal automatically for ALL discount redirections
+        const registrationModal = new bootstrap.Modal(document.getElementById('registrationModal'));
+        registrationModal.show();
+        toastr.info("Discount settings initialized. Please enter pilgrim details.");
     }
 
     // Toggle Deposit field based on status (Registration)
@@ -97,7 +94,14 @@ document.addEventListener('DOMContentLoaded', function() {
     function calculateFinalPrice() {
         const selectedPackage = packageTypeSelect.value;
         const basePrice = prices[selectedPackage] || 0;
-        const totalBasePrice = basePrice * gsize;
+        
+        // REQUIREMENT LOCK: Force gsize to 1 if it's a 'percent' offer (like Ramadan)
+        let effectiveGSize = gsize;
+        if (dtype === 'percent') {
+            effectiveGSize = 1;
+        }
+        
+        const totalBasePrice = basePrice * effectiveGSize;
         
         let discountAmt = 0;
         if (dtype === 'percent') {
@@ -247,6 +251,7 @@ document.addEventListener('DOMContentLoaded', function() {
         // Handle deposit field visibility and value
         const deposit = pilgrim.initial_deposit || 0;
         document.getElementById('editInitialDeposit').value = deposit;
+        const editDepositContainer = document.getElementById('editDepositContainer');
         if (pilgrim.status === 'Partial Payment') {
             editDepositContainer.classList.remove('d-none');
         } else {
